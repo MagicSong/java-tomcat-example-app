@@ -1,19 +1,27 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3-alpine'
+            args '-v /root/.m2:/root/.m2'
+        }
+    }
     stages {
         stage('Build') {
             steps {
-                echo 'Building..'
+                sh 'mvn -B -DskipTests clean package'
+                echo "正在构建项目，mvn -B -DskipTests clean package"
             }
         }
-        stage('Test') {
+        stage('Test') { 
             steps {
-                echo 'Testing..'
+                sh 'mvn test' 
+                echo '正在执行测试，mvn test'
             }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml' 
+                    echo '执行后续测试，target/surefire-reports/*.xml'
+                }
             }
         }
     }
